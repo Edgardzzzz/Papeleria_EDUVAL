@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, session, url_for, flash
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime  
 import os
 from models.models import db, Usuario, Categoria, Producto, Entradas, Salidas
 
@@ -431,7 +431,8 @@ def cambiar_rol(id):
     return redirect(url_for("usuarios"))
 
 #ejecucion de la app
+with app.app_context():
+    db.create_all()
+
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)

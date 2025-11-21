@@ -16,3 +16,4 @@ pip==25.2
 python-dotenv==1.1.1
 SQLAlchemy==2.0.44
 typing_extensions==4.15.0
+psycopg2-binary==2.9.9

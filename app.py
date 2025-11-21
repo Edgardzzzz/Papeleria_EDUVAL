@@ -45,7 +45,11 @@ def home():
     return render_template("index.html")
 
 app.config["EMPLOYEE_REGISTER_KEY"] = "EDUVAL2025"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///EDUVAL.db"
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
+    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL or 'sqlite:///EDUVAL.db'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Inicializar la base de datos
@@ -431,8 +435,8 @@ def cambiar_rol(id):
     return redirect(url_for("usuarios"))
 
 #ejecucion de la app
-with app.app_context():
-    db.create_all()
-
-if __name__ == "__main__":
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+        print("Tablas creadas/verificadas")
     app.run(debug=True)

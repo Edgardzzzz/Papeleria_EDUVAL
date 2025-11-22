@@ -29,7 +29,7 @@ class Producto(db.Model):
     #FOREIGN KEY A CATEGORIAS
     categoria_id = db.Column(db.Integer, db.ForeignKey("categorias.id"), nullable=False)
     categoria = db.relationship("Categoria", backref="Productos")
-    imagen_url = db.Column(db.String(500), nullable=True)
+    imagen_url = db.Column(db.Text, nullable=False)
 
 class Entradas(db.Model):
     __tablename__ = "entradas"

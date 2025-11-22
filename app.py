@@ -433,17 +433,8 @@ def cambiar_rol(id):
     db.session.commit()
     flash("Rol actualizado correctamente", "success")
     return redirect(url_for("usuarios"))
-    
-@app.route('/setup-database')
-def setup_database():
-    try:
-        with app.app_context():
-            db.create_all()
-            return "Base de datos configurada exitosamente. Las tablas han sido creadas."
-    except Exception as e:
-        return f"Error: {str(e)}"
-    
 
+    
 #ejecucion de la app
 if __name__ == '__main__':
     with app.app_context():

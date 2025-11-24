@@ -8,17 +8,18 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Navbar con botón hamburguesa -->
+    {% block navbar %}
+    <!-- Navbar con solo hamburguesa y logo -->
     <nav class="navbar-custom">
       <div class="navbar-container">
-        <!-- Botón hamburguesa (izquierda) -->
+        <!-- Botón hamburguesa -->
         <button class="hamburger-btn" id="hamburgerBtn">
           <span></span>
           <span></span>
           <span></span>
         </button>
         
-        <!-- Logo (centrado) -->
+        <!-- Logo centrado -->
         <a href="{{ url_for('home') }}" class="navbar-logo">
           <img src="{{ url_for('static', filename='images/logotaip.png') }}" alt="Logo" height="40">
           <span>Papelería EDUVAL</span>
@@ -29,7 +30,7 @@
       </div>
     </nav>
 
-    <!-- Menú lateral (desde la IZQUIERDA) -->
+    <!-- Menú lateral -->
     <div class="sidebar-menu" id="sidebarMenu">
       <div class="sidebar-header">
         <h3>MENÚ</h3>
@@ -39,7 +40,7 @@
       <ul class="sidebar-links">
         {% if session.user_id %}
           <li class="user-info">
-            <span>Usuario: {{ session.username }}</span>
+            <span>Usuario: {{ session.nombre_usuario }}</span>
           </li>
         {% endif %}
         
@@ -51,11 +52,10 @@
         </li>
         
         {% if session.user_id %}
-          <li>
-            <a href="{{ url_for('dashboard') }}">DASHBOARD</a>
-          </li>
-          
           {% if session.rol == 'administrador' %}
+            <li>
+              <a href="{{ url_for('dashboard') }}">DASHBOARD</a>
+            </li>
             <li>
               <a href="{{ url_for('productos') }}">PRODUCTOS</a>
             </li>
@@ -64,6 +64,17 @@
             </li>
             <li>
               <a href="{{ url_for('usuarios') }}">USUARIOS</a>
+            </li>
+          {% elif session.rol == 'empleado' %}
+            <li>
+              <a href="{{ url_for('productos') }}">PRODUCTOS</a>
+            </li>
+            <li>
+              <a href="{{ url_for('categorias') }}">CATEGORÍAS</a>
+            </li>
+          {% elif session.rol == 'cajero' %}
+            <li>
+              <a href="{{ url_for('productos') }}">PRODUCTOS</a>
             </li>
           {% endif %}
           
@@ -81,8 +92,9 @@
       </ul>
     </div>
 
-    <!-- Overlay (fondo oscuro cuando se abre el menú) -->
+    <!-- Overlay -->
     <div class="overlay" id="overlay"></div>
+    {% endblock %}
 
     <!-- Contenido principal -->
     <main class="main-content">
@@ -106,37 +118,34 @@
 
     <!-- JavaScript -->
     <script>
-      // Elementos
       const hamburgerBtn = document.getElementById('hamburgerBtn');
       const sidebarMenu = document.getElementById('sidebarMenu');
       const overlay = document.getElementById('overlay');
       const closeBtn = document.getElementById('closeBtn');
       
-      // Abrir menú
-      hamburgerBtn.addEventListener('click', () => {
-        sidebarMenu.classList.add('active');
-        overlay.classList.add('active');
-      });
-      
-      // Cerrar menú (botón X)
-      closeBtn.addEventListener('click', () => {
-        sidebarMenu.classList.remove('active');
-        overlay.classList.remove('active');
-      });
-      
-      // Cerrar menú (click en overlay)
-      overlay.addEventListener('click', () => {
-        sidebarMenu.classList.remove('active');
-        overlay.classList.remove('active');
-      });
-      
-      // Cerrar menú al hacer click en un link
-      document.querySelectorAll('.sidebar-links a').forEach(link => {
-        link.addEventListener('click', () => {
+      if (hamburgerBtn && sidebarMenu && overlay && closeBtn) {
+        hamburgerBtn.addEventListener('click', () => {
+          sidebarMenu.classList.add('active');
+          overlay.classList.add('active');
+        });
+        
+        closeBtn.addEventListener('click', () => {
           sidebarMenu.classList.remove('active');
           overlay.classList.remove('active');
         });
-      });
+        
+        overlay.addEventListener('click', () => {
+          sidebarMenu.classList.remove('active');
+          overlay.classList.remove('active');
+        });
+        
+        document.querySelectorAll('.sidebar-links a').forEach(link => {
+          link.addEventListener('click', () => {
+            sidebarMenu.classList.remove('active');
+            overlay.classList.remove('active');
+          });
+        });
+      }
     </script>
     
     {% block extra_js %}{% endblock %}

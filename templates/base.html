@@ -19,7 +19,7 @@
         </button>
         
         <!-- Logo (centrado) -->
-        <a href="{{ url_for('inicio') }}" class="navbar-logo">
+        <a href="{{ url_for('home') }}" class="navbar-logo">
           <img src="{{ url_for('static', filename='images/logotaip.png') }}" alt="Logo" height="40">
           <span>Papelería EDUVAL</span>
         </a>
@@ -44,7 +44,7 @@
         {% endif %}
         
         <li>
-          <a href="{{ url_for('inicio') }}">INICIO</a>
+          <a href="{{ url_for('home') }}">INICIO</a>
         </li>
         <li>
           <a href="{{ url_for('catalogo') }}">CATÁLOGO</a>
@@ -68,7 +68,7 @@
           {% endif %}
           
           <li>
-            <a href="{{ url_for('cerrar_sesion') }}" class="logout-link">CERRAR SESIÓN</a>
+            <a href="{{ url_for('logout') }}" class="logout-link">CERRAR SESIÓN</a>
           </li>
         {% else %}
           <li>

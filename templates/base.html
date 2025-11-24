@@ -3,151 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Papelería EDUVAL{% endblock %}</title>
+    <title>{% block title %}Papelería Eduval{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
     {% block navbar %}
-    <!-- Navbar con solo hamburguesa y logo -->
-    <nav class="navbar-custom">
-      <div class="navbar-container">
-        <!-- Botón hamburguesa -->
-        <button class="hamburger-btn" id="hamburgerBtn">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-        
-        <!-- Logo centrado -->
-        <a href="{{ url_for('home') }}" class="navbar-logo">
-          <img src="{{ url_for('static', filename='images/logotaip.png') }}" alt="Logo" height="40">
-          <span>Papelería EDUVAL</span>
+    <!-- Navbar por defecto (puede ser sobrescrito) -->
+    {% if session.user_id %}
+    <nav class="navbar-internal">
+        <a href="{{ url_for('home') }}">
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Papelería Eduval" class="logo-small">
         </a>
-        
-        <!-- Espacio vacío para balance -->
-        <div style="width: 46px;"></div>
-      </div>
+        <div class="nav-links">
+            <span style="margin-right: 15px; font-size: 13px; font-weight: 600;">{{ session.nombre_usuario }}</span>
+            <a href="{{ url_for('home') }}">INICIO</a>
+            <a href="{{ url_for('catalogo') }}">CATÁLOGO</a>
+            {% if session.rol == 'administrador' %}
+            <a href="{{ url_for('dashboard') }}">DASHBOARD</a>
+            <a href="{{ url_for('productos') }}">PRODUCTOS</a>
+            <a href="{{ url_for('categorias') }}">CATEGORÍAS</a>
+            <a href="{{ url_for('usuarios') }}">USUARIOS</a>
+            {% elif session.rol in ['empleado', 'cajero'] %}
+            <a href="{{ url_for('productos') }}">PRODUCTOS</a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}">CERRAR SESIÓN</a>
+        </div>
     </nav>
-
-    <!-- Menú lateral -->
-    <div class="sidebar-menu" id="sidebarMenu">
-      <div class="sidebar-header">
-        <h3>MENÚ</h3>
-        <button class="close-btn" id="closeBtn">&times;</button>
-      </div>
-      
-      <ul class="sidebar-links">
-        {% if session.user_id %}
-          <li class="user-info">
-            <span>Usuario: {{ session.nombre_usuario }}</span>
-          </li>
-        {% endif %}
-        
-        <li>
-          <a href="{{ url_for('home') }}">INICIO</a>
-        </li>
-        <li>
-          <a href="{{ url_for('catalogo') }}">CATÁLOGO</a>
-        </li>
-        
-        {% if session.user_id %}
-          {% if session.rol == 'administrador' %}
-            <li>
-              <a href="{{ url_for('dashboard') }}">DASHBOARD</a>
-            </li>
-            <li>
-              <a href="{{ url_for('productos') }}">PRODUCTOS</a>
-            </li>
-            <li>
-              <a href="{{ url_for('categorias') }}">CATEGORÍAS</a>
-            </li>
-            <li>
-              <a href="{{ url_for('usuarios') }}">USUARIOS</a>
-            </li>
-          {% elif session.rol == 'empleado' %}
-            <li>
-              <a href="{{ url_for('productos') }}">PRODUCTOS</a>
-            </li>
-            <li>
-              <a href="{{ url_for('categorias') }}">CATEGORÍAS</a>
-            </li>
-          {% elif session.rol == 'cajero' %}
-            <li>
-              <a href="{{ url_for('productos') }}">PRODUCTOS</a>
-            </li>
-          {% endif %}
-          
-          <li>
-            <a href="{{ url_for('logout') }}" class="logout-link">CERRAR SESIÓN</a>
-          </li>
-        {% else %}
-          <li>
-            <a href="{{ url_for('login') }}">INICIAR SESIÓN</a>
-          </li>
-          <li>
-            <a href="{{ url_for('registro') }}">REGISTRARSE</a>
-          </li>
-        {% endif %}
-      </ul>
-    </div>
-
-    <!-- Overlay -->
-    <div class="overlay" id="overlay"></div>
+    {% else %}
+    <!-- Navbar para público (sin login visible) -->
+    <nav class="navbar-internal">
+        <a href="{{ url_for('home') }}">
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Papelería Eduval" class="logo-small">
+        </a>
+        <div class="nav-links">
+            <a href="{{ url_for('home') }}">INICIO</a>
+            <a href="{{ url_for('catalogo') }}">CATÁLOGO</a>
+        </div>
+    </nav>
+    {% endif %}
     {% endblock %}
 
+    <!-- Mensajes Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div style="max-width: 1200px; margin: 20px auto; padding: 0 20px;">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
     <!-- Contenido principal -->
-    <main class="main-content">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            {% for category, message in messages %}
-              <div class="alert alert-{{ category }}">
-                {{ message }}
-              </div>
-            {% endfor %}
-          {% endif %}
-        {% endwith %}
-        
-        {% block content %}{% endblock %}
-    </main>
+    {% block content %}{% endblock %}
 
-    <!-- Footer -->
-    <footer class="footer">
-        <p>&copy; 2025 Papelería EDUVAL - Todos los derechos reservados</p>
-    </footer>
-
-    <!-- JavaScript -->
-    <script>
-      const hamburgerBtn = document.getElementById('hamburgerBtn');
-      const sidebarMenu = document.getElementById('sidebarMenu');
-      const overlay = document.getElementById('overlay');
-      const closeBtn = document.getElementById('closeBtn');
-      
-      if (hamburgerBtn && sidebarMenu && overlay && closeBtn) {
-        hamburgerBtn.addEventListener('click', () => {
-          sidebarMenu.classList.add('active');
-          overlay.classList.add('active');
-        });
-        
-        closeBtn.addEventListener('click', () => {
-          sidebarMenu.classList.remove('active');
-          overlay.classList.remove('active');
-        });
-        
-        overlay.addEventListener('click', () => {
-          sidebarMenu.classList.remove('active');
-          overlay.classList.remove('active');
-        });
-        
-        document.querySelectorAll('.sidebar-links a').forEach(link => {
-          link.addEventListener('click', () => {
-            sidebarMenu.classList.remove('active');
-            overlay.classList.remove('active');
-          });
-        });
-      }
-    </script>
-    
     {% block extra_js %}{% endblock %}
 </body>
 </html>

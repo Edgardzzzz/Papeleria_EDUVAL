@@ -180,7 +180,7 @@ body {
     overflow: hidden;
 }
 
-/* Efecto de fondo animado */
+/* Efecto de fondo */
 .index-container::before {
     content: '';
     position: absolute;
@@ -190,12 +190,6 @@ body {
     height: 200%;
     background: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
     background-size: 50px 50px;
-    animation: backgroundMove 20s linear infinite;
-}
-
-@keyframes backgroundMove {
-    0% { transform: translate(0, 0); }
-    100% { transform: translate(50px, 50px); }
 }
 
 .index-content {
@@ -211,18 +205,6 @@ body {
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     text-align: center;
     backdrop-filter: blur(10px);
-    animation: fadeInUp 0.8s ease-out;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 .logo-container-enhanced {
@@ -232,12 +214,6 @@ body {
 .logo-wrapper {
     display: inline-block;
     position: relative;
-    animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
 }
 
 .logo-enhanced {
@@ -351,9 +327,8 @@ body {
     font-weight: 700;
     color: white;
     text-align: center;
-    margin-bottom: 30px;
-    letter-spacing: -0.5px;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    margin-bottom: 40px;
+    letter-spacing: 2px;
 }
 
 .logo-container {
@@ -838,6 +813,38 @@ tbody tr:hover {
     box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
 }
 
+/* Botones de ordenamiento */
+.btn-order {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background-color: white;
+    border: 1px solid #D1D5DB;
+    color: #6B7280;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-order:hover {
+    border-color: #2563EB;
+    color: #2563EB;
+    background-color: #F9FAFB;
+}
+
+.btn-order.active {
+    background-color: #2563EB;
+    border-color: #2563EB;
+    color: white;
+}
+
+.btn-order.active:hover {
+    background-color: #1D4ED8;
+}
+
 /* ==================== GESTIÓN DE USUARIOS ==================== */
 .rol-badge {
     display: inline-block;
@@ -945,7 +952,6 @@ tbody tr:hover {
         right: 12px;
     }
 
-    /* Index responsive */
     .index-card {
         padding: 40px 30px;
     }
@@ -976,7 +982,6 @@ tbody tr:hover {
         font-size: 12px;
     }
 
-    /* Estilos simples */
     .store-name {
         font-size: 36px;
     }
@@ -1028,6 +1033,4 @@ tbody tr:hover {
         padding: 6px 10px;
         font-size: 12px;
     }
-
 }
-

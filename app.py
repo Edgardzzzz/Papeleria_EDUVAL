@@ -151,7 +151,7 @@ def login():
 def productos():
     # Obtener parámetros de busqueda y filtros
     busqueda = request.args.get('busqueda', '').strip()
-    categoria_filtro = request.args.get('categoria','')
+    categoria_filtro = request.args.get('categoria','').strip()
     orden = request.args.get('orden', 'categoria')
 
     query = Producto.query

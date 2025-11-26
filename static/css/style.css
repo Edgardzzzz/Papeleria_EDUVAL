@@ -887,6 +887,105 @@ tbody tr:hover {
     border-top-color: #BFDBFE;
     border-bottom-color: #BFDBFE;
 }
+/* ==================== BARRA DE BÚSQUEDA Y FILTROS ==================== */
+.search-filters-bar {
+    margin-bottom: 24px;
+    padding: 20px;
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+}
+
+.search-filters-form {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-input-box {
+    flex: 1;
+    min-width: 250px;
+    padding: 10px 14px;
+    border: 1px solid #D1D5DB;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    background-color: white;
+    transition: all 0.2s ease;
+}
+
+.search-input-box:focus {
+    outline: none;
+    border-color: #2563EB;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.category-filter-select {
+    padding: 10px 14px;
+    border: 1px solid #D1D5DB;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    background-color: white;
+    cursor: pointer;
+    min-width: 200px;
+    transition: all 0.2s ease;
+}
+
+.category-filter-select:focus {
+    outline: none;
+    border-color: #2563EB;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.btn-apply-filter {
+    padding: 10px 24px;
+    background-color: #2563EB;
+    color: white;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.btn-apply-filter:hover {
+    background-color: #1D4ED8;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.btn-clear-filter {
+    padding: 10px 24px;
+    background-color: #6B7280;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    font-family: 'Inter', sans-serif;
+    display: inline-block;
+}
+
+.btn-clear-filter:hover {
+    background-color: #4B5563;
+}
+
+/* Responsive para filtros */
+@media (max-width: 768px) {
+    .search-filters-form {
+        flex-direction: column;
+    }
+    
+    .search-input-box,
+    .category-filter-select {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .btn-apply-filter,
+    .btn-clear-filter {
+        width: 100%;
+    }
+}
 
 /* ==================== RESPONSIVE ==================== */
 @media (max-width: 768px) {

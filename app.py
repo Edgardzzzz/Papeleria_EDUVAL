@@ -149,8 +149,20 @@ def login():
 @app.route("/productos")
 @rol_requerido("administrador", "empleado", "cajero")
 def productos():
-    # Obtener parámetro de ordenamiento
+    # Obtener parámetros de busqueda y filtros
+    busqueda = request.args.get('busqueda', '').strip()
+    categoria_filtro = request.args.get('categoria','')
     orden = request.args.get('orden', 'categoria')
+
+    query = Producto.query
+    
+    #FILTRO POR NOMBRE DE PRODUCTO
+    if busqueda: 
+        query = query.filter(Producto.nombre.ilike(f'%{busqueda}%'))
+
+    #FILTRAR POR CATEGORIAS
+    if categoria_filtro:
+        query = query.filter(Producto.categoria_id == int(categoria_filtro))
     
     # Ordenar productos según el parámetro
     if orden == 'nombre':
@@ -162,7 +174,14 @@ def productos():
     else:  # orden == 'categoria' o por defecto
         productos = Producto.query.join(Categoria).order_by(Categoria.nombre, Producto.nombre).all()
     
-    return render_template("productos.html", productos=productos)
+    #CATEGORIAS PARA EL FILTRO
+    categorias = Categoria.query.order_by(Categoria.nombre).all()
+      
+    return render_template("productos.html", 
+                         productos=productos, 
+                         categorias=categorias,
+                         busqueda=busqueda,
+                         categoria_filtro=categoria_filtro)
 
 #agregar nuevos productos al inventario
 @app.route("/agregar_producto", methods = ["GET" , "POST"])

@@ -12,27 +12,58 @@
             {% endif %}
         </div>
 
+        <!-- Barra de búsqueda y filtros -->
+        <div class="search-filters-bar">
+            <form method="GET" action="{{ url_for('productos') }}" class="search-filters-form">
+                <!-- Buscador -->
+                <input 
+                    type="text" 
+                    name="busqueda" 
+                    placeholder="Buscar producto..." 
+                    value="{{ busqueda or '' }}"
+                    class="search-input-box"
+                >
+
+                <!-- Filtro por categoría -->
+                <select name="categoria" class="category-filter-select">
+                    <option value="">Todas las categorías</option>
+                    {% for cat in categorias %}
+                        <option value="{{ cat.id }}" {% if categoria_filtro == cat.id|string %}selected{% endif %}>
+                            {{ cat.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <!-- Mantener el orden actual -->
+                <input type="hidden" name="orden" value="{{ request.args.get('orden', 'categoria') }}">
+
+                <!-- Botones -->
+                <button type="submit" class="btn-apply-filter">Buscar</button>
+                <a href="{{ url_for('productos') }}" class="btn-clear-filter">Limpiar</a>
+            </form>
+        </div>
+
         {% if productos %}
         <table>
             <thead>
                 <tr>
                     <th>ID</th>
                     <th>
-                        <a href="{{ url_for('productos', orden='nombre') }}" 
+                        <a href="{{ url_for('productos', orden='nombre', busqueda=busqueda, categoria=categoria_filtro) }}" 
                            class="header-sort {% if request.args.get('orden') == 'nombre' %}active{% endif %}"
                            title="Ordenar por Nombre">
                             NOMBRE {% if request.args.get('orden') == 'nombre' %}▼{% else %}⇅{% endif %}
                         </a>
                     </th>
                     <th>
-                        <a href="{{ url_for('productos', orden='precio') }}" 
+                        <a href="{{ url_for('productos', orden='precio', busqueda=busqueda, categoria=categoria_filtro) }}" 
                            class="header-sort {% if request.args.get('orden') == 'precio' %}active{% endif %}"
                            title="Ordenar por Precio">
                             PRECIO {% if request.args.get('orden') == 'precio' %}▼{% else %}⇅{% endif %}
                         </a>
                     </th>
                     <th>
-                        <a href="{{ url_for('productos', orden='stock') }}" 
+                        <a href="{{ url_for('productos', orden='stock', busqueda=busqueda, categoria=categoria_filtro) }}" 
                            class="header-sort {% if request.args.get('orden') == 'stock' %}active{% endif %}"
                            title="Ordenar por Stock">
                             STOCK {% if request.args.get('orden') == 'stock' %}▼{% else %}⇅{% endif %}
@@ -40,7 +71,7 @@
                     </th>
                     <th>STOCK MÍNIMO</th>
                     <th>
-                        <a href="{{ url_for('productos', orden='categoria') }}" 
+                        <a href="{{ url_for('productos', orden='categoria', busqueda=busqueda, categoria=categoria_filtro) }}" 
                            class="header-sort {% if request.args.get('orden') == 'categoria' or not request.args.get('orden') %}active{% endif %}"
                            title="Ordenar por Categoría">
                             CATEGORÍA {% if request.args.get('orden') == 'categoria' or not request.args.get('orden') %}▼{% else %}⇅{% endif %}
@@ -83,7 +114,13 @@
             </tbody>
         </table>
         {% else %}
-        <p style="text-align: center; padding: 40px; color: #666;">No hay productos registrados</p>
+        <p style="text-align: center; padding: 40px; color: #666;">
+            {% if busqueda or categoria_filtro %}
+                No se encontraron productos con los filtros aplicados.
+            {% else %}
+                No hay productos registrados.
+            {% endif %}
+        </p>
         {% endif %}
     </div>
 </div>

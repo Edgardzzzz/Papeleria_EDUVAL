@@ -149,34 +149,35 @@ def login():
 @app.route("/productos")
 @rol_requerido("administrador", "empleado", "cajero")
 def productos():
-    # Obtener parámetros de busqueda y filtros
+    # Obtener parámetros de búsqueda y filtros
     busqueda = request.args.get('busqueda', '').strip()
-    categoria_filtro = request.args.get('categoria','').strip()
+    categoria_filtro = request.args.get('categoria', '').strip()
     orden = request.args.get('orden', 'categoria')
-
+    
+    # Query base
     query = Producto.query
     
-    #FILTRO POR NOMBRE DE PRODUCTO
-    if busqueda: 
+    # Aplicar filtro de búsqueda por nombre
+    if busqueda:
         query = query.filter(Producto.nombre.ilike(f'%{busqueda}%'))
-
-    #FILTRAR POR CATEGORIAS
-    if categoria_filtro:
+    
+    # Aplicar filtro de categoría
+    if categoria_filtro and categoria_filtro.isdigit():
         query = query.filter(Producto.categoria_id == int(categoria_filtro))
     
     # Ordenar productos según el parámetro
     if orden == 'nombre':
-        productos = Producto.query.order_by(Producto.nombre).all()
+        productos = query.order_by(Producto.nombre).all()
     elif orden == 'stock':
-        productos = Producto.query.order_by(Producto.stock.desc()).all()
+        productos = query.order_by(Producto.stock.desc()).all()
     elif orden == 'precio':
-        productos = Producto.query.order_by(Producto.precio.desc()).all()
+        productos = query.order_by(Producto.precio.desc()).all()
     else:  # orden == 'categoria' o por defecto
-        productos = Producto.query.join(Categoria).order_by(Categoria.nombre, Producto.nombre).all()
+        productos = query.join(Categoria).order_by(Categoria.nombre, Producto.nombre).all()
     
-    #CATEGORIAS PARA EL FILTRO
+    # Obtener todas las categorías para el filtro
     categorias = Categoria.query.order_by(Categoria.nombre).all()
-      
+    
     return render_template("productos.html", 
                          productos=productos, 
                          categorias=categorias,

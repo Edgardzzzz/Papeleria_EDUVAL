@@ -154,7 +154,7 @@ def productos():
     categoria_filtro = request.args.get('categoria', '').strip()
     orden = request.args.get('orden', 'categoria')
     page = request.args.get('page', 1, type=int)
-    per_page = 20 
+    per_page = 15 
     
     # Query base
     query = Producto.query
@@ -185,7 +185,7 @@ def productos():
     categorias = Categoria.query.order_by(Categoria.nombre).all()
     
     return render_template("productos.html", 
-                         productos=productos, 
+                         productos=pagination.items, 
                          pagination=pagination,
                          categorias=categorias,
                          busqueda=busqueda,

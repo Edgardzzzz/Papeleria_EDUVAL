@@ -45,12 +45,12 @@
                     <td>
                         {{ usuario.nombre_usuario }}
                         {% if usuario.id == session.user_id %}
-                        <span style="color: #2563EB; font-size: 11px; font-weight: 600; margin-left: 8px;">(TÚ)</span>
+                        <span style="color: #2563EB; font-size: 11px; font-weight: 600; margin-left: 8px;">(TU)</span>
                         {% endif %}
                     </td>
                     <td>
                         <span class="rol-badge rol-{{ usuario.rol }}">
-                            {{ usuario.rol|capitalize }}
+                            {{ usuario.rol|upper }}
                         </span>
                     </td>
                     <td>
@@ -66,13 +66,15 @@
                             </form>
                             {% endif %}
 
-                            <!-- Botón eliminar (no se puede eliminar a sí mismo) -->
+                            <!-- Botón eliminar -->
                             {% if usuario.id != session.user_id %}
-                            <form method="POST" action="{{ url_for('eliminar_usuario', id=usuario.id) }}" style="display: inline;">
-                                <button type="submit" class="btn-small btn-delete" onclick="return confirm('¿Estás seguro de eliminar al usuario {{ usuario.nombre_usuario }}?')">
-                                    ELIMINAR
-                                </button>
-                            </form>
+                            <button type="button" class="btn-small btn-delete" 
+                                    data-tipo="usuario" 
+                                    data-nombre="{{ usuario.nombre_usuario }}" 
+                                    data-url="{{ url_for('eliminar_usuario', id=usuario.id) }}"
+                                    onclick="showDeleteModalFromButton(this)">
+                                ELIMINAR
+                            </button>
                             {% else %}
                             <button class="btn-small" style="background-color: #9CA3AF; cursor: not-allowed;" disabled>
                                 ELIMINAR
@@ -89,6 +91,56 @@
         {% endif %}
     </div>
 </div>
+
+<!-- Modal de confirmación -->
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3 class="modal-title">Confirmar eliminación</h3>
+        <p class="modal-message" id="modalMessage"></p>
+        <div class="modal-actions">
+            <button class="modal-btn modal-btn-cancel" onclick="closeDeleteModal()">
+                Cancelar
+            </button>
+            <form id="deleteForm" method="POST" style="display: inline;">
+                <button type="submit" class="modal-btn modal-btn-confirm">
+                    Eliminar
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Función usando data attributes
+function showDeleteModalFromButton(button) {
+    const tipo = button.getAttribute('data-tipo');
+    const nombre = button.getAttribute('data-nombre');
+    const url = button.getAttribute('data-url');
+    showDeleteModal(tipo, nombre, url);
+}
+
+function showDeleteModal(tipo, nombre, url) {
+    const modal = document.getElementById('deleteModal');
+    const message = document.getElementById('modalMessage');
+    const form = document.getElementById('deleteForm');
+    
+    message.innerHTML = '¿Estás seguro de eliminar el ' + tipo + ' <strong>' + nombre + '</strong>?';
+    form.action = url;
+    modal.classList.add('active');
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+    modal.classList.remove('active');
+}
+
+// Cerrar modal al hacer click fuera
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDeleteModal();
+    }
+});
+</script>
 
 <style>
 .header-sort {
@@ -119,10 +171,9 @@ thead th {
 .rol-badge {
     display: inline-block;
     padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
-    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .rol-administrador {
@@ -143,11 +194,12 @@ thead th {
 .rol-select {
     padding: 6px 10px;
     border: 1px solid #D1D5DB;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
     background-color: white;
-    transition: border-color 0.2s;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 8px;
 }
 
 .rol-select:hover {

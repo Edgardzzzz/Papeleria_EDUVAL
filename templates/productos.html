@@ -101,11 +101,13 @@
                             <a href="{{ url_for('salida_producto', id=producto.id) }}" class="btn-small btn-stock">SALIDA</a>
                             {% endif %}
                             {% if session.rol == 'administrador' %}
-                            <form method="POST" action="{{ url_for('eliminar_producto', id=producto.id) }}" style="display: inline;">
-                                <button type="submit" class="btn-small btn-delete" onclick="return confirm('¿Estás seguro de eliminar este producto?')">
-                                    ELIMINAR
-                                </button>
-                            </form>
+                            <button type="button" class="btn-small btn-delete" 
+                                    data-tipo="producto" 
+                                    data-nombre="{{ producto.nombre }}" 
+                                    data-url="{{ url_for('eliminar_producto', id=producto.id) }}"
+                                    onclick="showDeleteModalFromButton(this)">
+                                ELIMINAR
+                            </button>
                             {% endif %}
                         </div>
                     </td>
@@ -124,6 +126,56 @@
         {% endif %}
     </div>
 </div>
+
+<!-- Modal de confirmación -->
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3 class="modal-title">Confirmar eliminación</h3>
+        <p class="modal-message" id="modalMessage"></p>
+        <div class="modal-actions">
+            <button class="modal-btn modal-btn-cancel" onclick="closeDeleteModal()">
+                Cancelar
+            </button>
+            <form id="deleteForm" method="POST" style="display: inline;">
+                <button type="submit" class="modal-btn modal-btn-confirm">
+                    Eliminar
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Función usando data attributes
+function showDeleteModalFromButton(button) {
+    const tipo = button.getAttribute('data-tipo');
+    const nombre = button.getAttribute('data-nombre');
+    const url = button.getAttribute('data-url');
+    showDeleteModal(tipo, nombre, url);
+}
+
+function showDeleteModal(tipo, nombre, url) {
+    const modal = document.getElementById('deleteModal');
+    const message = document.getElementById('modalMessage');
+    const form = document.getElementById('deleteForm');
+    
+    message.innerHTML = '¿Estás seguro de eliminar el ' + tipo + ' <strong>' + nombre + '</strong>?';
+    form.action = url;
+    modal.classList.add('active');
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+    modal.classList.remove('active');
+}
+
+// Cerrar modal al hacer click fuera
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDeleteModal();
+    }
+});
+</script>
 
 <style>
 .header-sort {

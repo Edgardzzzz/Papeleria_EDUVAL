@@ -9,6 +9,34 @@
         <p class="catalogo-subtitle">Explora nuestro inventario disponible</p>
     </div>
 
+    <!-- Barra de búsqueda y filtros -->
+    <div class="search-filters-bar">
+        <form method="GET" action="{{ url_for('catalogo') }}" class="search-filters-form">
+            <!-- Buscador -->
+            <input 
+                type="text" 
+                name="busqueda" 
+                placeholder="Buscar producto..." 
+                value="{{ busqueda or '' }}"
+                class="search-input-box"
+            >
+
+            <!-- Filtro por categoría -->
+            <select name="categoria" class="category-filter-select">
+                <option value="">Todas las categorías</option>
+                {% for cat in categorias %}
+                    <option value="{{ cat.id }}" {% if categoria_filtro == cat.id|string %}selected{% endif %}>
+                        {{ cat.nombre }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <!-- Botones -->
+            <button type="submit" class="btn-apply-filter">Buscar</button>
+            <a href="{{ url_for('catalogo') }}" class="btn-clear-filter">Limpiar</a>
+        </form>
+    </div>
+
     {% if productos %}
     <div class="productos-grid">
         {% for producto in productos %}
@@ -49,7 +77,7 @@
                 </div>
 
                 <!-- Botón de WhatsApp -->
-                <a href="https://wa.me/528993332252?text=Hola%20me%20interesa%20un%20producto" 
+                <a href="https://wa.me/528993332252?text=Hola%20me%20interesa%20el%20producto:%20{{ producto.nombre|urlencode }}" 
                      target="_blank"
                      class="btn-whatsapp">
                     <svg class="whatsapp-icon" viewBox="0 0 24 24" fill="currentColor">
@@ -61,9 +89,76 @@
         </div>
         {% endfor %}
     </div>
+
+    <!-- Paginación -->
+    {% if pagination and pagination.pages > 1 %}
+    <div class="pagination-container">
+        <div class="pagination-info">
+            Mostrando {{ pagination.per_page * (pagination.page - 1) + 1 }} - 
+            {{ [pagination.per_page * pagination.page, pagination.total]|min }} de {{ pagination.total }} productos
+        </div>
+        
+        <div class="pagination-buttons">
+            <!-- Primera página -->
+            {% if pagination.has_prev %}
+            <a href="{{ url_for('catalogo', page=1, busqueda=busqueda, categoria=categoria_filtro) }}" 
+               class="pagination-btn">
+                ««
+            </a>
+            {% endif %}
+
+            <!-- Página anterior -->
+            {% if pagination.has_prev %}
+            <a href="{{ url_for('catalogo', page=pagination.prev_num, busqueda=busqueda, categoria=categoria_filtro) }}" 
+               class="pagination-btn">
+                ‹
+            </a>
+            {% endif %}
+
+            <!-- Números de página -->
+            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    {% if page_num == pagination.page %}
+                    <span class="pagination-btn active">{{ page_num }}</span>
+                    {% else %}
+                    <a href="{{ url_for('catalogo', page=page_num, busqueda=busqueda, categoria=categoria_filtro) }}" 
+                       class="pagination-btn">
+                        {{ page_num }}
+                    </a>
+                    {% endif %}
+                {% else %}
+                <span class="pagination-ellipsis">...</span>
+                {% endif %}
+            {% endfor %}
+
+            <!-- Página siguiente -->
+            {% if pagination.has_next %}
+            <a href="{{ url_for('catalogo', page=pagination.next_num, busqueda=busqueda, categoria=categoria_filtro) }}" 
+               class="pagination-btn">
+                ›
+            </a>
+            {% endif %}
+
+            <!-- Última página -->
+            {% if pagination.has_next %}
+            <a href="{{ url_for('catalogo', page=pagination.pages, busqueda=busqueda, categoria=categoria_filtro) }}" 
+               class="pagination-btn">
+                »»
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
     {% else %}
     <div class="sin-productos">
-        <p>No hay productos disponibles en este momento</p>
+        <p>
+            {% if busqueda or categoria_filtro %}
+                No se encontraron productos con los filtros aplicados.
+            {% else %}
+                No hay productos disponibles en este momento.
+            {% endif %}
+        </p>
     </div>
     {% endif %}
 </div>
@@ -77,7 +172,7 @@
 
 .catalogo-header {
     text-align: center;
-    margin-bottom: 50px;
+    margin-bottom: 40px;
 }
 
 .catalogo-title {
@@ -96,6 +191,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 30px;
+    margin-top: 30px;
 }
 
 .producto-card {

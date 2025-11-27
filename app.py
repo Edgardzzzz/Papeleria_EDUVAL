@@ -58,8 +58,35 @@ db.init_app(app)
 #RUTA REQUERIDA PARA EL CATALOGO PARA LOS CLIENTES
 @app.route("/catalogo")
 def catalogo():
-    productos = Producto.query.filter(Producto.stock>0).all() 
-    return render_template("catalogo.html" , productos = productos)
+    #parametros de busqueda y el filtrado
+    busqueda = request.args.get('busquedea', '').strip()
+    categoria_filtro = request.args.get('categoria', '').strip()
+    page = request.args.get('page', 1, type=int)
+    per_page = 16
+
+    query = Producto.query.filter(Producto.stock > 0)
+
+    #filtro de busqueda por nombre del producto
+    if busqueda:
+        query = query.filter(Producto.nombre.ilike(f'%{busqueda}%'))
+    
+    #filtro por categorias
+    if categoria_filtro and categoria_filtro.isdigit():
+        query = query.filter(Producto.categoria_id == int(categoria_filtro))
+    
+    query = query.join(Categoria).order_by(Categoria.nombre, Producto.nombre)
+
+    #PAGINACION
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+    categorias = Categoria.query.order_by(Categoria.nombre).all()
+    
+    return render_template("catalogo.html", 
+                         productos=pagination.items,
+                         pagination=pagination,
+                         categorias=categorias,
+                         busqueda=busqueda,
+                         categoria_filtro=categoria_filtro)
 
 
 

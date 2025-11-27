@@ -178,7 +178,7 @@ def productos():
         productos = query.join(Categoria).order_by(Categoria.nombre, Producto.nombre).all()
 
     #paginacion 
-    pagination = query.pagination(page=page, per_page=per_page, error_out=False)
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     productos = pagination.items 
     
     # Obtener todas las categorías para el filtro

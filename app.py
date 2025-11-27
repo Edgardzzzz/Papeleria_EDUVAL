@@ -491,22 +491,6 @@ def cambiar_rol(id):
     flash("Rol actualizado correctamente", "success")
     return redirect(url_for("usuarios"))
 
-@app.route('/actualizar-estructura-db')
-def actualizar_estructura_db():
-    try:
-        # Intentar hacer la columna nullable usando SQL directo
-        from sqlalchemy import text
-        
-        with db.engine.connect() as conn:
-            # Hacer la columna nullable
-            conn.execute(text('ALTER TABLE productos ALTER COLUMN imagen_url DROP NOT NULL'))
-            conn.commit()
-        
-        return " Estructura de base de datos actualizada. La columna imagen_url ahora permite valores NULL."
-    except Exception as e:
-        return f" Error al actualizar: {str(e)}"
-
-    
 #ejecucion de la app
 if __name__ == '__main__':
     with app.app_context():

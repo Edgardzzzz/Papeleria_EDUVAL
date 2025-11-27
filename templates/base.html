@@ -12,11 +12,20 @@
     <!-- Navbar por defecto (puede ser sobrescrito) -->
     {% if session.user_id %}
     <nav class="navbar-internal">
-        <a href="{{ url_for('home') }}">
+        <a href="{{ url_for('home') }}" class="logo-link">
             <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Papelería Eduval" class="logo-small">
         </a>
-        <div class="nav-links">
-            <span style="margin-right: 15px; font-size: 13px; font-weight: 600;">{{ session.nombre_usuario }}</span>
+        
+        <!-- Botón hamburguesa (solo visible en móvil) -->
+        <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileMenu()" aria-label="Menú">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <!-- Menú desktop (se oculta en móvil) -->
+        <div class="nav-links nav-desktop">
+            <span class="nav-username">{{ session.nombre_usuario }}</span>
             <a href="{{ url_for('home') }}">INICIO</a>
             <a href="{{ url_for('catalogo') }}">CATÁLOGO</a>
             {% if session.rol == 'administrador' %}
@@ -27,20 +36,98 @@
             {% elif session.rol in ['empleado', 'cajero'] %}
             <a href="{{ url_for('productos') }}">PRODUCTOS</a>
             {% endif %}
-            <a href="{{ url_for('logout') }}">CERRAR SESIÓN</a>
+            <a href="{{ url_for('logout') }}" class="nav-logout">CERRAR SESIÓN</a>
         </div>
     </nav>
+
+    <!-- Overlay del menú móvil -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="toggleMobileMenu()"></div>
+
+    <!-- Menú móvil lateral -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Logo" class="mobile-menu-logo">
+            <button class="mobile-menu-close" onclick="toggleMobileMenu()" aria-label="Cerrar menú">
+                <span>✕</span>
+            </button>
+        </div>
+        
+        <div class="mobile-menu-user">
+            <div class="user-name">{{ session.nombre_usuario }}</div>
+            <div class="user-role">{{ session.rol|capitalize }}</div>
+        </div>
+        
+        <nav class="mobile-menu-links">
+            <a href="{{ url_for('home') }}" onclick="toggleMobileMenu()">
+                <span class="link-text">INICIO</span>
+            </a>
+            <a href="{{ url_for('catalogo') }}" onclick="toggleMobileMenu()">
+                <span class="link-text">CATÁLOGO</span>
+            </a>
+            {% if session.rol == 'administrador' %}
+            <a href="{{ url_for('dashboard') }}" onclick="toggleMobileMenu()">
+                <span class="link-text">DASHBOARD</span>
+            </a>
+            <a href="{{ url_for('productos') }}" onclick="toggleMobileMenu()">
+                <span class="link-text">PRODUCTOS</span>
+            </a>
+            <a href="{{ url_for('categorias') }}" onclick="toggleMobileMenu()">
+                <span class="link-text">CATEGORÍAS</span>
+            </a>
+            <a href="{{ url_for('usuarios') }}" onclick="toggleMobileMenu()">
+                <span class="link-text">USUARIOS</span>
+            </a>
+            {% elif session.rol in ['empleado', 'cajero'] %}
+            <a href="{{ url_for('productos') }}" onclick="toggleMobileMenu()">
+                <span class="link-text">PRODUCTOS</span>
+            </a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}" class="logout-link" onclick="toggleMobileMenu()">
+                <span class="link-text">CERRAR SESIÓN</span>
+            </a>
+        </nav>
+    </div>
+
     {% else %}
-    <!-- Navbar para público (sin login visible) -->
+    <!-- Navbar para público (sin login) -->
     <nav class="navbar-internal">
-        <a href="{{ url_for('home') }}">
+        <a href="{{ url_for('home') }}" class="logo-link">
             <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Papelería Eduval" class="logo-small">
         </a>
-        <div class="nav-links">
+        
+        <!-- Botón hamburguesa para público -->
+        <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileMenu()" aria-label="Menú">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <!-- Menú desktop -->
+        <div class="nav-links nav-desktop">
             <a href="{{ url_for('home') }}">INICIO</a>
             <a href="{{ url_for('catalogo') }}">CATÁLOGO</a>
         </div>
     </nav>
+
+    <!-- Menú móvil para público -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="toggleMobileMenu()"></div>
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Logo" class="mobile-menu-logo">
+            <button class="mobile-menu-close" onclick="toggleMobileMenu()" aria-label="Cerrar menú">
+                <span>✕</span>
+            </button>
+        </div>
+        
+        <nav class="mobile-menu-links">
+            <a href="{{ url_for('home') }}" onclick="toggleMobileMenu()">
+                <span class="link-text">INICIO</span>
+            </a>
+            <a href="{{ url_for('catalogo') }}" onclick="toggleMobileMenu()">
+                <span class="link-text">CATÁLOGO</span>
+            </a>
+        </nav>
+    </div>
     {% endif %}
     {% endblock %}
 
@@ -59,6 +146,46 @@
 
     <!-- Contenido principal -->
     {% block content %}{% endblock %}
+
+    <!-- JavaScript para el menú móvil -->
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const overlay = document.getElementById('mobileMenuOverlay');
+            const hamburger = document.getElementById('hamburgerBtn');
+            const body = document.body;
+            
+            menu.classList.toggle('active');
+            overlay.classList.toggle('active');
+            hamburger.classList.toggle('active');
+            body.classList.toggle('menu-open');
+        }
+
+        // Cerrar menú al presionar ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const menu = document.getElementById('mobileMenu');
+                if (menu.classList.contains('active')) {
+                    toggleMobileMenu();
+                }
+            }
+        });
+
+        // Cerrar menú al cambiar tamaño de ventana a desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                const menu = document.getElementById('mobileMenu');
+                const overlay = document.getElementById('mobileMenuOverlay');
+                const hamburger = document.getElementById('hamburgerBtn');
+                const body = document.body;
+                
+                menu.classList.remove('active');
+                overlay.classList.remove('active');
+                hamburger.classList.remove('active');
+                body.classList.remove('menu-open');
+            }
+        });
+    </script>
 
     {% block extra_js %}{% endblock %}
 </body>

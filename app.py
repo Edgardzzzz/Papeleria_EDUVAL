@@ -266,7 +266,7 @@ def editar_producto(id):
         producto.categoria_id = int(request.form ["categoria_id"])
         
         imagen_nueva = request.form.get("imagen?url", "").strip()
-        if imagen_nueva():
+        if imagen_nueva:
             producto.imagen_url = imagen_nueva
 
         db.session.commit()

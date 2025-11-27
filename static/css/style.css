@@ -1074,6 +1074,78 @@ tbody tr:hover {
     box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
 
+/* ==================== PAGINACIÓN ==================== */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #E5E7EB;
+}
+
+.pagination-info {
+    color: #6B7280;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.pagination-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.pagination-btn {
+    padding: 8px 12px;
+    background-color: white;
+    border: 1px solid #D1D5DB;
+    color: #374151;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    min-width: 40px;
+    text-align: center;
+}
+
+.pagination-btn:hover {
+    background-color: #F9FAFB;
+    border-color: #2563EB;
+    color: #2563EB;
+}
+
+.pagination-btn.active {
+    background-color: #2563EB;
+    border-color: #2563EB;
+    color: white;
+    font-weight: 600;
+}
+
+.pagination-ellipsis {
+    padding: 8px 4px;
+    color: #9CA3AF;
+    font-weight: 600;
+}
+
+/* Responsive para paginación */
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .pagination-buttons {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .pagination-btn {
+        padding: 6px 10px;
+        min-width: 36px;
+        font-size: 13px;
+    }
+}
 /* ==================== RESPONSIVE ==================== */
 @media (max-width: 768px) {
     .navbar {

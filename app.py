@@ -185,7 +185,7 @@ def productos():
     categorias = Categoria.query.order_by(Categoria.nombre).all()
     
     return render_template("productos.html", 
-                         productos=productos,
+                         productos=productos, 
                          pagination=pagination,
                          categorias=categorias,
                          busqueda=busqueda,

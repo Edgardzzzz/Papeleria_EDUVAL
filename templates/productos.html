@@ -123,6 +123,66 @@
                 No hay productos registrados.
             {% endif %}
         </p>
+{% endif %}
+
+        <!-- Paginación -->
+        {% if pagination and pagination.pages > 1 %}
+        <div class="pagination-container">
+            <div class="pagination-info">
+                Mostrando {{ pagination.per_page * (pagination.page - 1) + 1 }} - 
+                {{ [pagination.per_page * pagination.page, pagination.total]|min }} de {{ pagination.total }} productos
+            </div>
+            
+            <div class="pagination-buttons">
+                <!-- Primera página -->
+                {% if pagination.has_prev %}
+                <a href="{{ url_for('productos', page=1, orden=request.args.get('orden'), busqueda=busqueda, categoria=categoria_filtro) }}" 
+                   class="pagination-btn">
+                    ««
+                </a>
+                {% endif %}
+
+                <!-- Página anterior -->
+                {% if pagination.has_prev %}
+                <a href="{{ url_for('productos', page=pagination.prev_num, orden=request.args.get('orden'), busqueda=busqueda, categoria=categoria_filtro) }}" 
+                   class="pagination-btn">
+                    ‹
+                </a>
+                {% endif %}
+
+                <!-- Números de página -->
+                {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if page_num %}
+                        {% if page_num == pagination.page %}
+                        <span class="pagination-btn active">{{ page_num }}</span>
+                        {% else %}
+                        <a href="{{ url_for('productos', page=page_num, orden=request.args.get('orden'), busqueda=busqueda, categoria=categoria_filtro) }}" 
+                           class="pagination-btn">
+                            {{ page_num }}
+                        </a>
+                        {% endif %}
+                    {% else %}
+                    <span class="pagination-ellipsis">...</span>
+                    {% endif %}
+                {% endfor %}
+
+                <!-- Página siguiente -->
+                {% if pagination.has_next %}
+                <a href="{{ url_for('productos', page=pagination.next_num, orden=request.args.get('orden'), busqueda=busqueda, categoria=categoria_filtro) }}" 
+                   class="pagination-btn">
+                    ›
+                </a>
+                {% endif %}
+
+                <!-- Última página -->
+                {% if pagination.has_next %}
+                <a href="{{ url_for('productos', page=pagination.pages, orden=request.args.get('orden'), busqueda=busqueda, categoria=categoria_filtro) }}" 
+                   class="pagination-btn">
+                    »»
+                </a>
+                {% endif %}
+            </div>
+        </div>
         {% endif %}
     </div>
 </div>

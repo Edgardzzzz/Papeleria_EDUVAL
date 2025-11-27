@@ -153,6 +153,8 @@ def productos():
     busqueda = request.args.get('busqueda', '').strip()
     categoria_filtro = request.args.get('categoria', '').strip()
     orden = request.args.get('orden', 'categoria')
+    page = request.args.get('page', 1, type=int)
+    per_page = 20 
     
     # Query base
     query = Producto.query
@@ -172,14 +174,19 @@ def productos():
         productos = query.order_by(Producto.stock.desc()).all()
     elif orden == 'precio':
         productos = query.order_by(Producto.precio.desc()).all()
-    else:  # orden == 'categoria' o por defecto
+    else:  
         productos = query.join(Categoria).order_by(Categoria.nombre, Producto.nombre).all()
+
+    #paginacion 
+    pagination = query.pagination(page=page, per_page=per_page, error_out=False)
+    productos = pagination.items 
     
     # Obtener todas las categorías para el filtro
     categorias = Categoria.query.order_by(Categoria.nombre).all()
     
     return render_template("productos.html", 
-                         productos=productos, 
+                         productos=productos,
+                         pagination=pagination,
                          categorias=categorias,
                          busqueda=busqueda,
                          categoria_filtro=categoria_filtro)

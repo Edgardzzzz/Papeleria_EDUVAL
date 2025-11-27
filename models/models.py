@@ -28,8 +28,8 @@ class Producto(db.Model):
     stock_minimo = db.Column(db.Integer, default=5)
     #FOREIGN KEY A CATEGORIAS
     categoria_id = db.Column(db.Integer, db.ForeignKey("categorias.id"), nullable=False)
+    imagen_url = db.Column(db.Text, nullable=True)
     categoria = db.relationship("Categoria", backref="Productos")
-    imagen_url = db.Column(db.Text, nullable=False)
 
 class Entradas(db.Model):
     __tablename__ = "entradas"

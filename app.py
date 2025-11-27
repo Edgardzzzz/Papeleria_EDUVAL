@@ -264,7 +264,10 @@ def editar_producto(id):
         producto.stock = int(request.form ["stock"])
         producto.stock_minimo = int(request.form ["stock_minimo"])
         producto.categoria_id = int(request.form ["categoria_id"])
-        producto.imagen_url = request.form.get("imagen?url", "").strip() or None
+        
+        imagen_nueva = request.form.get("imagen?url", "").strip()
+        if imagen_nueva():
+            producto.imagen_url = imagen_nueva
 
         db.session.commit()
         flash("Producto actualizado correctamente", "success")
@@ -487,6 +490,21 @@ def cambiar_rol(id):
     db.session.commit()
     flash("Rol actualizado correctamente", "success")
     return redirect(url_for("usuarios"))
+
+@app.route('/actualizar-estructura-db')
+def actualizar_estructura_db():
+    try:
+        # Intentar hacer la columna nullable usando SQL directo
+        from sqlalchemy import text
+        
+        with db.engine.connect() as conn:
+            # Hacer la columna nullable
+            conn.execute(text('ALTER TABLE productos ALTER COLUMN imagen_url DROP NOT NULL'))
+            conn.commit()
+        
+        return " Estructura de base de datos actualizada. La columna imagen_url ahora permite valores NULL."
+    except Exception as e:
+        return f" Error al actualizar: {str(e)}"
 
     
 #ejecucion de la app

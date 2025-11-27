@@ -59,7 +59,7 @@ db.init_app(app)
 @app.route("/catalogo")
 def catalogo():
     #parametros de busqueda y el filtrado
-    busqueda = request.args.get('busquedea', '').strip()
+    busqueda = request.args.get('busqueda', '').strip()
     categoria_filtro = request.args.get('categoria', '').strip()
     page = request.args.get('page', 1, type=int)
     per_page = 16

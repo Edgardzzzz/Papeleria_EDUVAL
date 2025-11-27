@@ -39,11 +39,13 @@
                     <td>
                         <div class="action-buttons">
                             <a href="{{ url_for('editar_categoria', id=categoria.id) }}" class="btn-small btn-edit">EDITAR</a>
-                            <form method="POST" action="{{ url_for('eliminar_categoria', id=categoria.id) }}" style="display: inline;">
-                                <button type="submit" class="btn-small btn-delete" onclick="return confirm('¿Estás seguro de eliminar esta categoría?')">
-                                    ELIMINAR
-                                </button>
-                            </form>
+                            <button type="button" class="btn-small btn-delete" 
+                                    data-tipo="categoría" 
+                                    data-nombre="{{ categoria.nombre }}" 
+                                    data-url="{{ url_for('eliminar_categoria', id=categoria.id) }}"
+                                    onclick="showDeleteModalFromButton(this)">
+                                ELIMINAR
+                            </button>
                         </div>
                     </td>
                 </tr>
@@ -55,6 +57,56 @@
         {% endif %}
     </div>
 </div>
+
+<!-- Modal de confirmación -->
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3 class="modal-title">Confirmar eliminación</h3>
+        <p class="modal-message" id="modalMessage"></p>
+        <div class="modal-actions">
+            <button class="modal-btn modal-btn-cancel" onclick="closeDeleteModal()">
+                Cancelar
+            </button>
+            <form id="deleteForm" method="POST" style="display: inline;">
+                <button type="submit" class="modal-btn modal-btn-confirm">
+                    Eliminar
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Función usando data attributes
+function showDeleteModalFromButton(button) {
+    const tipo = button.getAttribute('data-tipo');
+    const nombre = button.getAttribute('data-nombre');
+    const url = button.getAttribute('data-url');
+    showDeleteModal(tipo, nombre, url);
+}
+
+function showDeleteModal(tipo, nombre, url) {
+    const modal = document.getElementById('deleteModal');
+    const message = document.getElementById('modalMessage');
+    const form = document.getElementById('deleteForm');
+    
+    message.innerHTML = '¿Estás seguro de eliminar la ' + tipo + ' <strong>' + nombre + '</strong>?';
+    form.action = url;
+    modal.classList.add('active');
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+    modal.classList.remove('active');
+}
+
+// Cerrar modal al hacer click fuera
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDeleteModal();
+    }
+});
+</script>
 
 <style>
 .header-sort {

@@ -33,6 +33,14 @@ app.config['MAIL_DEFAULT_SENDER'] = 'papeleriaeduval@gmail.com'
 db.init_app(app)
 mail = Mail(app)
 
+@app.before_request
+def crear_tablas():
+    # Esto se ejecutará solo una vez antes de la primera petición
+    if not hasattr(app, '_tablas_creadas'):
+        db.create_all()
+        app._tablas_creadas = True
+        print("Tablas creadas/verificadas en la base de datos")
+
 #DECORADOR PARA GESTIONAR LOS ROLOES DE CADA USUARIO 
 #Un decorador es una función que modifica o extiende el comportamiento de otra
 #función sin cambiar su código interno.

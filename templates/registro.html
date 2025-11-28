@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión - Papelería Eduval</title>
+    <title>Registro - Papelería Eduval</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <!-- Navbar discreto -->
     <div class="navbar">
         <a href="{{ url_for('home') }}" class="nav-btn">INICIO</a>
         <a href="{{ url_for('catalogo') }}" class="nav-btn">CATÁLOGO</a>
+        <a href="{{ url_for('login') }}" class="nav-btn">LOGIN</a>
     </div>
 
-    <!-- Formulario de login -->
     <div class="form-container">
-        <h2 class="form-title">INICIAR SESIÓN</h2>
+        <h2 class="form-title">REGISTRO DE USUARIO</h2>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -34,22 +33,38 @@
             </div>
 
             <div class="form-group">
-                <label for="contraseña">CONTRASEÑA</label>
-                <input type="password" id="contraseña" name="contraseña" required>
+                <label for="email">EMAIL</label>
+                <input type="email" id="email" name="email" placeholder="correo@ejemplo.com">
+                <small style="color: #6B7280; font-size: 12px; display: block; margin-top: 4px;">
+                    Necesario para recuperar contraseña
+                </small>
             </div>
 
-            <button type="submit" class="btn-primary">INGRESAR</button>
+            <div class="form-group">
+                <label for="contraseña">CONTRASEÑA</label>
+                <input type="password" id="contraseña" name="contraseña" required minlength="6">
+            </div>
+
+            <div class="form-group">
+                <label for="rol">ROL</label>
+                <select id="rol" name="rol" required>
+                    <option value="empleado">Empleado</option>
+                    <option value="cajero">Cajero</option>
+                    <option value="administrador">Administrador</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="clave_registro">CLAVE DE REGISTRO</label>
+                <input type="password" id="clave_registro" name="clave_registro" required 
+                       placeholder="Clave de acceso para crear usuarios">
+            </div>
+
+            <button type="submit" class="btn-primary">REGISTRARSE</button>
         </form>
 
-        <!-- Enlace de recuperación de contraseña -->
-        <div class="form-footer" style="margin-top: 16px; text-align: center;">
-            <a href="{{ url_for('recuperar_contrasena') }}" style="color: #2563EB; text-decoration: none; font-weight: 500;">
-                ¿Olvidaste tu contraseña?
-            </a>
-        </div>
-
         <div class="form-footer">
-            ¿No tienes cuenta? <a href="{{ url_for('registro') }}">Regístrate aquí</a>
+            ¿Ya tienes cuenta? <a href="{{ url_for('login') }}">Inicia sesión aquí</a>
         </div>
     </div>
 </body>

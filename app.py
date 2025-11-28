@@ -74,8 +74,6 @@ if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL or 'sqlite:///EDUVAL.db'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# Inicializar la base de datos
-db.init_app(app)
 
 #RUTA REQUERIDA PARA EL CATALOGO PARA LOS CLIENTES
 @app.route("/catalogo")

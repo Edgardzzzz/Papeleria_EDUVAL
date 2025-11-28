@@ -178,7 +178,6 @@ def registro():
     return render_template("registro.html")
 
 
-
 @app.route("/recuperar_contrasena", methods=["GET", "POST"])
 def recuperar_contrasena():
     if request.method == "POST":
@@ -191,43 +190,50 @@ def recuperar_contrasena():
         ).first()
         
         if usuario and usuario.email:
-            # Invalidar tokens anteriores
-            tokens_viejos = PasswordResetToken.query.filter_by(
-                usuario_id=usuario.id, 
-                usado=False
-            ).all()
-            for token in tokens_viejos:
-                token.usado = True
-            
-            # Crear nuevo token
-            nuevo_token = PasswordResetToken(usuario_id=usuario.id)
-            db.session.add(nuevo_token)
-            db.session.commit()
-            
-            # Generar link de recuperación
-            link_recuperacion = url_for('restablecer_contrasena', 
-                                       token=nuevo_token.token, 
-                                       _external=True)
-            
-            # Enviar email
             try:
-                html_body = render_template('email_recuperacion.html',
-                                          nombre_usuario=usuario.nombre_usuario,
-                                          link_recuperacion=link_recuperacion)
+                # Invalidar tokens anteriores
+                tokens_viejos = PasswordResetToken.query.filter_by(
+                    usuario_id=usuario.id, 
+                    usado=False
+                ).all()
+                for token in tokens_viejos:
+                    token.usado = True
                 
-                msg = Message(
-                    subject="Recuperación de Contraseña - Papelería EDUVAL",
-                    recipients=[usuario.email],
-                    html=html_body
-                )
+                # Crear nuevo token
+                nuevo_token = PasswordResetToken(usuario_id=usuario.id)
+                db.session.add(nuevo_token)
+                db.session.commit()
                 
-                mail.send(msg)
-                flash("Se ha enviado un enlace de recuperación a tu correo electrónico.", "success")
+                # Generar link de recuperación
+                link_recuperacion = url_for('restablecer_contrasena', 
+                                           token=nuevo_token.token, 
+                                           _external=True)
+                
+                # Enviar email usando el template
+                try:
+                    html_body = render_template('email_recuperacion.html',
+                                              nombre_usuario=usuario.nombre_usuario,
+                                              link_recuperacion=link_recuperacion)
+                    
+                    msg = Message(
+                        subject="Recuperacion de Contrasena - Papeleria EDUVAL",
+                        recipients=[usuario.email],
+                        html=html_body
+                    )
+                    
+                    mail.send(msg)
+                    flash("Se ha enviado un enlace de recuperacion a tu correo electronico.", "success")
+                    
+                except Exception as e:
+                    print(f"Error al enviar email: {e}")
+                    flash("El enlace de recuperacion ha sido generado. Si no recibes el correo, contacta al administrador.", "warning")
+                
             except Exception as e:
-                flash("Error al enviar el correo. Por favor, contacta al administrador.", "error")
-                print(f"Error al enviar email: {e}")
+                print(f"Error en el proceso de recuperacion: {e}")
+                flash("Hubo un error al procesar tu solicitud. Intenta nuevamente.", "error")
         else:
-            flash("Si el usuario existe y tiene email registrado, recibirás un correo.", "info")
+            # Mensaje genérico por seguridad
+            flash("Si el usuario existe y tiene email registrado, recibiras un correo.", "info")
         
         return redirect(url_for("login"))
     

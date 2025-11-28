@@ -640,9 +640,5 @@ if __name__ == '__main__':
         print("Tablas creadas/verificadas")
     app.run(debug=True)
     
-#ejecucion de la app
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        print("Tablas creadas/verificadas")
-    app.run(debug=True)
+
+    

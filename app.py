@@ -3,6 +3,7 @@ from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime  
 from itsdangerous import URLSafeTimedSerializer
+from threading import Thread
 import os
 from models.models import db, Usuario, Categoria, Producto, Entradas, Salidas, PasswordResetToken
 
@@ -35,11 +36,19 @@ mail = Mail(app)
 
 @app.before_request
 def crear_tablas():
-    # Esto se ejecutará solo una vez antes de la primera petición
     if not hasattr(app, '_tablas_creadas'):
         db.create_all()
         app._tablas_creadas = True
         print("Tablas creadas/verificadas en la base de datos")
+
+# FUNCIÓN PARA ENVIAR EMAIL EN SEGUNDO PLANO
+def enviar_email_async(app, msg):
+    with app.app_context():
+        try:
+            mail.send(msg)
+            print("Email enviado exitosamente")
+        except Exception as e:
+            print(f"Error al enviar email: {e}")
 
 #DECORADOR PARA GESTIONAR LOS ROLOES DE CADA USUARIO 
 #Un decorador es una función que modifica o extiende el comportamiento de otra
@@ -183,7 +192,6 @@ def recuperar_contrasena():
     if request.method == "POST":
         email_o_usuario = request.form["email_o_usuario"].strip()
         
-        # Buscar usuario por email o nombre de usuario
         usuario = Usuario.query.filter(
             (Usuario.email == email_o_usuario) | 
             (Usuario.nombre_usuario == email_o_usuario)
@@ -192,47 +200,41 @@ def recuperar_contrasena():
         if usuario and usuario.email:
             try:
                 # Invalidar tokens anteriores
-                tokens_viejos = PasswordResetToken.query.filter_by(
+                PasswordResetToken.query.filter_by(
                     usuario_id=usuario.id, 
                     usado=False
-                ).all()
-                for token in tokens_viejos:
-                    token.usado = True
+                ).update({PasswordResetToken.usado: True})
                 
                 # Crear nuevo token
                 nuevo_token = PasswordResetToken(usuario_id=usuario.id)
                 db.session.add(nuevo_token)
                 db.session.commit()
                 
-                # Generar link de recuperación
+                # Generar link
                 link_recuperacion = url_for('restablecer_contrasena', 
                                            token=nuevo_token.token, 
                                            _external=True)
                 
-                # Enviar email usando el template
-                try:
-                    html_body = render_template('email_recuperacion.html',
-                                              nombre_usuario=usuario.nombre_usuario,
-                                              link_recuperacion=link_recuperacion)
-                    
-                    msg = Message(
-                        subject="Recuperacion de Contrasena - Papeleria EDUVAL",
-                        recipients=[usuario.email],
-                        html=html_body
-                    )
-                    
-                    mail.send(msg)
-                    flash("Se ha enviado un enlace de recuperacion a tu correo electronico.", "success")
-                    
-                except Exception as e:
-                    print(f"Error al enviar email: {e}")
-                    flash("El enlace de recuperacion ha sido generado. Si no recibes el correo, contacta al administrador.", "warning")
+                # Preparar mensaje
+                html_body = render_template('email_recuperacion.html',
+                                          nombre_usuario=usuario.nombre_usuario,
+                                          link_recuperacion=link_recuperacion)
+                
+                msg = Message(
+                    subject="Recuperacion de Contrasena - Papeleria EDUVAL",
+                    recipients=[usuario.email],
+                    html=html_body
+                )
+                
+                # Enviar email en segundo plano
+                Thread(target=enviar_email_async, args=(app._get_current_object(), msg)).start()
+                
+                flash("Se ha enviado un enlace de recuperacion a tu correo electronico.", "success")
                 
             except Exception as e:
-                print(f"Error en el proceso de recuperacion: {e}")
-                flash("Hubo un error al procesar tu solicitud. Intenta nuevamente.", "error")
+                print(f"Error: {e}")
+                flash("Hubo un error al procesar tu solicitud.", "error")
         else:
-            # Mensaje genérico por seguridad
             flash("Si el usuario existe y tiene email registrado, recibiras un correo.", "info")
         
         return redirect(url_for("login"))
@@ -244,7 +246,7 @@ def restablecer_contrasena(token):
     reset_token = PasswordResetToken.query.filter_by(token=token).first()
     
     if not reset_token or not reset_token.es_valido():
-        flash("El enlace de recuperación es inválido o ha expirado.", "error")
+        flash("El enlace de recuperacion es invalido o ha expirado.", "error")
         return redirect(url_for("login"))
     
     if request.method == "POST":
@@ -252,23 +254,19 @@ def restablecer_contrasena(token):
         confirmar_contrasena = request.form["confirmar_contrasena"]
         
         if nueva_contrasena != confirmar_contrasena:
-            flash("Las contraseñas no coinciden.", "error")
+            flash("Las contrasenas no coinciden.", "error")
             return redirect(url_for("restablecer_contrasena", token=token))
         
         if len(nueva_contrasena) < 6:
-            flash("La contraseña debe tener al menos 6 caracteres.", "warning")
+            flash("La contrasena debe tener al menos 6 caracteres.", "warning")
             return redirect(url_for("restablecer_contrasena", token=token))
         
-        # Actualizar contraseña
         usuario = Usuario.query.get(reset_token.usuario_id)
         usuario.contraseña = generate_password_hash(nueva_contrasena)
-        
-        # Marcar token como usado
         reset_token.usado = True
-        
         db.session.commit()
         
-        flash("Tu contraseña ha sido actualizada exitosamente.", "success")
+        flash("Tu contrasena ha sido actualizada exitosamente.", "success")
         return redirect(url_for("login"))
     
     return render_template("restablecer_contrasena.html", token=token)

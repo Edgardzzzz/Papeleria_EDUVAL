@@ -609,7 +609,7 @@ def cambiar_rol(id):
     db.session.commit()
     flash("Rol actualizado correctamente", "success")
     return redirect(url_for("usuarios"))
-
+    
 #ejecucion de la app
 if __name__ == '__main__':
     with app.app_context():

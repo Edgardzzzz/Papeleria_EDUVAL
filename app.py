@@ -42,13 +42,14 @@ def crear_tablas():
         print("Tablas creadas/verificadas en la base de datos")
 
 # FUNCIÓN PARA ENVIAR EMAIL EN SEGUNDO PLANO
-def enviar_email_async(app, msg):
-    with app.app_context():
-        try:
+def enviar_email_async(msg):
+    """Envía email en segundo plano sin bloquear el worker"""
+    try:
+        with app.app_context():
             mail.send(msg)
             print("Email enviado exitosamente")
-        except Exception as e:
-            print(f"Error al enviar email: {e}")
+    except Exception as e:
+        print(f"Error al enviar email: {e}")
 
 #DECORADOR PARA GESTIONAR LOS ROLOES DE CADA USUARIO 
 #Un decorador es una función que modifica o extiende el comportamiento de otra
@@ -226,8 +227,8 @@ def recuperar_contrasena():
                     html=html_body
                 )
                 
-                # Enviar email en segundo plano
-                Thread(target=enviar_email_async, args=(app._get_current_object(), msg)).start()
+                # Enviar email en segundo plano (SIN _get_current_object)
+                Thread(target=enviar_email_async, args=(msg,)).start()
                 
                 flash("Se ha enviado un enlace de recuperacion a tu correo electronico.", "success")
                 

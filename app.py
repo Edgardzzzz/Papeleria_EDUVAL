@@ -610,36 +610,6 @@ def cambiar_rol(id):
     flash("Rol actualizado correctamente", "success")
     return redirect(url_for("usuarios"))
 
-@app.route("/migrar_base_datos_secret_2025", methods=["GET"])
-@rol_requerido("administrador")
-def migrar_base_datos():
-    """Migración segura: agrega columnas sin perder datos"""
-    try:
-        from sqlalchemy import text
-        
-        # Verificar si la columna 'email' ya existe en usuarios
-        with db.engine.connect() as conn:
-            # Intentar agregar columna email si no existe
-            try:
-                conn.execute(text("ALTER TABLE usuarios ADD COLUMN email VARCHAR(120)"))
-                conn.commit()
-                flash("Columna 'email' agregada a la tabla usuarios", "success")
-            except Exception as e:
-                if "duplicate column" in str(e).lower() or "already exists" in str(e).lower():
-                    flash(" La columna 'email' ya existe", "info")
-                else:
-                    raise e
-        
-        # Crear tabla de tokens si no existe
-        db.create_all()
-        
-        flash(" Migración completada exitosamente. Base de datos actualizada sin pérdida de datos.", "success")
-        return redirect(url_for("dashboard"))
-        
-    except Exception as e:
-        flash(f"Error en la migración: {str(e)}", "error")
-        return redirect(url_for("dashboard"))
-
 
 #ejecucion de la app
 if __name__ == '__main__':

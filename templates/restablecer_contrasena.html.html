@@ -3,47 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restablecer Contraseña - Papelería EDUVAL</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Restablecer Contraseña - EDUVAL</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <div class="form-container">
         <h2 class="form-title">Restablecer Contraseña</h2>
         
-        <p style="text-align: center; color: #6B7280; margin-bottom: 24px; font-size: 14px;">
-            Ingresa tu nueva contraseña. Debe tener al menos 6 caracteres.
-        </p>
-
-        <!-- Mostrar mensajes flash -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">
-                        {{ message }}
-                    </div>
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
-
+        
+        <p style="text-align: center; color: #6B7280; margin-bottom: 24px; font-size: 14px;">
+            Ingresa tu nueva contraseña
+        </p>
+        
         <form method="POST">
             <div class="form-group">
                 <label for="nueva_contrasena">Nueva Contraseña</label>
-                <input type="password" id="nueva_contrasena" name="nueva_contrasena" required 
-                       minlength="6" placeholder="Mínimo 6 caracteres">
+                <input type="password" 
+                       id="nueva_contrasena" 
+                       name="nueva_contrasena" 
+                       required 
+                       minlength="6"
+                       placeholder="Mínimo 6 caracteres">
             </div>
-
+            
             <div class="form-group">
                 <label for="confirmar_contrasena">Confirmar Contraseña</label>
-                <input type="password" id="confirmar_contrasena" name="confirmar_contrasena" required 
-                       placeholder="Repite tu contraseña">
+                <input type="password" 
+                       id="confirmar_contrasena" 
+                       name="confirmar_contrasena" 
+                       required 
+                       minlength="6"
+                       placeholder="Repite la contraseña">
             </div>
-
+            
             <button type="submit" class="btn-primary">Restablecer Contraseña</button>
         </form>
-
-        <div class="form-footer">
-            <a href="{{ url_for('login') }}">← Volver al inicio de sesión</a>
-        </div>
     </div>
 </body>
 </html>

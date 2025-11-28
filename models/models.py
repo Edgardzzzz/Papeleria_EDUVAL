@@ -1,11 +1,12 @@
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timedelta
+import secrets
 
 # Crear la instancia de SQLAlchemy
 db = SQLAlchemy()
 
 #USURARIOS DEL SISTEMA
-class Usuario(UserMixin, db.Model):
+class Usuario(db.Model):
     __tablename__ = "usuarios"
     id = db.Column(db.Integer, primary_key=True)
     nombre_usuario = db.Column(db.String(50), unique=True, nullable=False)
@@ -56,3 +57,22 @@ class Salidas(db.Model):
     producto = db.relationship("Producto", backref="Salidas")
     usuario = db.relationship("Usuario", backref="Salidas")
 
+class PasswordResetToken(db.Model):
+    __tablename__ = 'password_reset_tokens'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    token = db.Column(db.String(100), unique=True, nullable=False)
+    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
+    fecha_expiracion = db.Column(db.DateTime, nullable=False)
+    usado = db.Column(db.Boolean, default=False)
+    
+    usuario = db.relationship('Usuario', backref='reset_tokens')
+    
+    def __init__(self, usuario_id):
+        self.usuario_id = usuario_id
+        self.token = secrets.token_urlsafe(32)
+        self.fecha_expiracion = datetime.utcnow() + timedelta(hours=1)
+    
+    def es_valido(self):
+        return not self.usado and datetime.utcnow() < self.fecha_expiracion

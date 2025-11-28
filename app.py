@@ -169,7 +169,7 @@ def registro():
     
     return render_template("registro.html")
 
-# ========== RECUPERACIÓN DE CONTRASEÑA ==========
+
 
 @app.route("/recuperar_contrasena", methods=["GET", "POST"])
 def recuperar_contrasena():
@@ -201,13 +201,12 @@ def recuperar_contrasena():
                                        token=nuevo_token.token, 
                                        _external=True)
             
-            # Renderizar template de email
+            # Enviar email
             try:
                 html_body = render_template('email_recuperacion.html',
                                           nombre_usuario=usuario.nombre_usuario,
                                           link_recuperacion=link_recuperacion)
                 
-                # Crear y enviar mensaje
                 msg = Message(
                     subject="Recuperación de Contraseña - Papelería EDUVAL",
                     recipients=[usuario.email],
@@ -220,17 +219,14 @@ def recuperar_contrasena():
                 flash("Error al enviar el correo. Por favor, contacta al administrador.", "error")
                 print(f"Error al enviar email: {e}")
         else:
-            # Por seguridad, mostrar el mismo mensaje
             flash("Si el usuario existe y tiene email registrado, recibirás un correo.", "info")
         
         return redirect(url_for("login"))
     
     return render_template("recuperar_contrasena.html")
 
-
 @app.route("/restablecer_contrasena/<token>", methods=["GET", "POST"])
 def restablecer_contrasena(token):
-    # Buscar token
     reset_token = PasswordResetToken.query.filter_by(token=token).first()
     
     if not reset_token or not reset_token.es_valido():

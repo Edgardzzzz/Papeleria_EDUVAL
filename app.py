@@ -611,6 +611,35 @@ def cambiar_rol(id):
     return redirect(url_for("usuarios"))
 
 
+def migrar_bd_segura():
+    """Migración automática que se ejecuta al iniciar"""
+    try:
+        from sqlalchemy import inspect, text
+        
+        inspector = inspect(db.engine)
+        
+        if 'usuarios' in inspector.get_table_names():
+            columnas_usuarios = [col['name'] for col in inspector.get_columns('usuarios')]
+            
+            if 'email' not in columnas_usuarios:
+                with db.engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE usuarios ADD COLUMN email VARCHAR(120)"))
+                    conn.commit()
+                    print("✓ Columna 'email' agregada")
+        
+        db.create_all()
+        print("✓ Base de datos verificada")
+        
+    except Exception as e:
+        print(f"⚠ Advertencia: {str(e)}")
+
+# Modificar el bloque final:
+if __name__ == '__main__':
+    with app.app_context():
+        migrar_bd_segura()  # ← Agregar esta línea
+        print("Tablas creadas/verificadas")
+    app.run(debug=True)
+    
 #ejecucion de la app
 if __name__ == '__main__':
     with app.app_context():

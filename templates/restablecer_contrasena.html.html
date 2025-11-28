@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Restablecer Contraseña - Papelería EDUVAL{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2 class="form-title">Restablecer Contraseña</h2>
+    
+    <p style="text-align: center; color: #6B7280; margin-bottom: 24px;">
+        Ingresa tu nueva contraseña
+    </p>
+
+    <form method="POST">
+        <div class="form-group">
+            <label for="password">Nueva Contraseña</label>
+            <input type="password" id="password" name="password" required minlength="6">
+        </div>
+
+        <div class="form-group">
+            <label for="password_confirm">Confirmar Contraseña</label>
+            <input type="password" id="password_confirm" name="password_confirm" required>
+        </div>
+
+        <button type="submit" class="btn-primary">Restablecer Contraseña</button>
+    </form>
+
+    <div class="form-footer">
+        <a href="{{ url_for('login') }}">Volver al inicio de sesión</a>
+    </div>
+</div>
+{% endblock %}

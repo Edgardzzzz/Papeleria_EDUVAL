@@ -5,10 +5,11 @@ from datetime import datetime
 db = SQLAlchemy()
 
 #USURARIOS DEL SISTEMA
-class Usuario(db.Model):
+class Usuario(UserMixin, db.Model):
     __tablename__ = "usuarios"
     id = db.Column(db.Integer, primary_key=True)
     nombre_usuario = db.Column(db.String(50), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=True)
     contraseña = db.Column(db.String(255), nullable=False)
     rol = db.Column(db.String(20), default="empleado")
 

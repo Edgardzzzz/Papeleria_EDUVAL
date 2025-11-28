@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, redirect, session, url_for, flash
+from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime  
+from itsdangerous import URLSafeTimedSerializer
 import os
-from models.models import db, Usuario, Categoria, Producto, Entradas, Salidas
+from models.models import db, Usuario, Categoria, Producto, Entradas, Salidas, PasswordResetToken
 
 #FLASK SE EJECUTA DENTRO DE APP
 app = Flask(__name__)
@@ -10,6 +12,26 @@ app = Flask(__name__)
 #SECRET KEY
 app.secret_key = "PAPELERIA_EDUVAL_2025"
 app.config["EMPLOYEE_REGISTER_KEY"] = "EDUVAL2025"
+
+# CONFIGURACIÓN DE BASE DE DATOS
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
+    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL or 'sqlite:///EDUVAL.db'
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# CONFIGURACIÓN DE CORREO
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'papeleriaeduval@gmail.com'  
+app.config['MAIL_PASSWORD'] = 'geni uhvn tnkl kort'  
+app.config['MAIL_DEFAULT_SENDER'] = 'papeleriaeduval@gmail.com'
+
+#INICIAR EXTENSIONES
+db.init_app(app)
+mail = Mail(app)
 
 #DECORADOR PARA GESTIONAR LOS ROLOES DE CADA USUARIO 
 #Un decorador es una función que modifica o extiende el comportamiento de otra
@@ -98,11 +120,12 @@ def catalogo():
 
 #REGISTRO DE USUARIOS
 #request.form.get xq flask no acepta tuplas en request.form
-@app.route("/registro", methods= ["GET", "POST"])
+@app.route("/registro", methods=["GET", "POST"])
 def registro():
-    if request.method =="POST":
+    if request.method == "POST":
         nombre_usuario = request.form["nombre_usuario"]
         contraseña = request.form["contraseña"]
+        email = request.form.get("email", "").strip() or None  # ← NUEVO
         rol = request.form.get("rol", "empleado")
         clave_registro = request.form["clave_registro"]
 
@@ -110,35 +133,137 @@ def registro():
         if clave_registro != app.config["EMPLOYEE_REGISTER_KEY"]:
             flash("Clave de registro incorrecta. Solo personal autorizado puede crear usuarios.", "error")
             return redirect(url_for("registro"))
-         # Validar campos vacíos
+        
+        # Validar campos vacíos
         if not nombre_usuario or not contraseña:
             flash("Todos los campos son obligatorios.", "warning")
             return redirect(url_for("registro"))
         
-
-        #VERIFICAR AL USUARIO
+        # VERIFICAR AL USUARIO
         usuario_existente = Usuario.query.filter_by(nombre_usuario=nombre_usuario).first()
         if usuario_existente:
             flash("El nombre de usuario ya existe. Por favor, elige otro.", "warning")
             return redirect(url_for("registro"))
         
-        #CIFRADO DE CONTRASEÑA
+        # Verificar email si se proporcionó
+        if email:
+            email_existente = Usuario.query.filter_by(email=email).first()
+            if email_existente:
+                flash("El correo electrónico ya está registrado.", "warning")
+                return redirect(url_for("registro"))
+        
+        # CIFRADO DE CONTRASEÑA
         hashed_password = generate_password_hash(contraseña)
 
-        #CREAR NUEVO USUARIO
+        # CREAR NUEVO USUARIO
         nuevo_usuario = Usuario(
-            nombre_usuario= nombre_usuario,
-            contraseña = hashed_password,
-            rol = rol
+            nombre_usuario=nombre_usuario,
+            contraseña=hashed_password,
+            email=email,
+            rol=rol
         ) 
         
-        #GUARDADO DENTRO DE LA BASE DE DATOS
+        # GUARDADO DENTRO DE LA BASE DE DATOS
         db.session.add(nuevo_usuario)
         db.session.commit()
-        flash("Registro terminado con exito. Por favor inicia sesion.", "success")
+        flash("Registro terminado con éxito. Por favor inicia sesión.", "success")
         return redirect(url_for("login"))
+    
     return render_template("registro.html")
 
+# ========== RECUPERACIÓN DE CONTRASEÑA ==========
+
+@app.route("/recuperar_contrasena", methods=["GET", "POST"])
+def recuperar_contrasena():
+    if request.method == "POST":
+        email_o_usuario = request.form["email_o_usuario"].strip()
+        
+        # Buscar usuario por email o nombre de usuario
+        usuario = Usuario.query.filter(
+            (Usuario.email == email_o_usuario) | 
+            (Usuario.nombre_usuario == email_o_usuario)
+        ).first()
+        
+        if usuario and usuario.email:
+            # Invalidar tokens anteriores
+            tokens_viejos = PasswordResetToken.query.filter_by(
+                usuario_id=usuario.id, 
+                usado=False
+            ).all()
+            for token in tokens_viejos:
+                token.usado = True
+            
+            # Crear nuevo token
+            nuevo_token = PasswordResetToken(usuario_id=usuario.id)
+            db.session.add(nuevo_token)
+            db.session.commit()
+            
+            # Generar link de recuperación
+            link_recuperacion = url_for('restablecer_contrasena', 
+                                       token=nuevo_token.token, 
+                                       _external=True)
+            
+            # Renderizar template de email
+            try:
+                html_body = render_template('email_recuperacion.html',
+                                          nombre_usuario=usuario.nombre_usuario,
+                                          link_recuperacion=link_recuperacion)
+                
+                # Crear y enviar mensaje
+                msg = Message(
+                    subject="Recuperación de Contraseña - Papelería EDUVAL",
+                    recipients=[usuario.email],
+                    html=html_body
+                )
+                
+                mail.send(msg)
+                flash("Se ha enviado un enlace de recuperación a tu correo electrónico.", "success")
+            except Exception as e:
+                flash("Error al enviar el correo. Por favor, contacta al administrador.", "error")
+                print(f"Error al enviar email: {e}")
+        else:
+            # Por seguridad, mostrar el mismo mensaje
+            flash("Si el usuario existe y tiene email registrado, recibirás un correo.", "info")
+        
+        return redirect(url_for("login"))
+    
+    return render_template("recuperar_contrasena.html")
+
+
+@app.route("/restablecer_contrasena/<token>", methods=["GET", "POST"])
+def restablecer_contrasena(token):
+    # Buscar token
+    reset_token = PasswordResetToken.query.filter_by(token=token).first()
+    
+    if not reset_token or not reset_token.es_valido():
+        flash("El enlace de recuperación es inválido o ha expirado.", "error")
+        return redirect(url_for("login"))
+    
+    if request.method == "POST":
+        nueva_contrasena = request.form["nueva_contrasena"]
+        confirmar_contrasena = request.form["confirmar_contrasena"]
+        
+        if nueva_contrasena != confirmar_contrasena:
+            flash("Las contraseñas no coinciden.", "error")
+            return redirect(url_for("restablecer_contrasena", token=token))
+        
+        if len(nueva_contrasena) < 6:
+            flash("La contraseña debe tener al menos 6 caracteres.", "warning")
+            return redirect(url_for("restablecer_contrasena", token=token))
+        
+        # Actualizar contraseña
+        usuario = Usuario.query.get(reset_token.usuario_id)
+        usuario.contraseña = generate_password_hash(nueva_contrasena)
+        
+        # Marcar token como usado
+        reset_token.usado = True
+        
+        db.session.commit()
+        
+        flash("Tu contraseña ha sido actualizada exitosamente.", "success")
+        return redirect(url_for("login"))
+    
+    return render_template("restablecer_contrasena.html", token=token)
 
 #PARA ACCEDER A LA PAGINA DEL LOGIN ES NECESARIO PONER EN EL URL ¨/LOGIN¨
 #LOGIN DE USUARIOS 
@@ -490,6 +615,37 @@ def cambiar_rol(id):
     db.session.commit()
     flash("Rol actualizado correctamente", "success")
     return redirect(url_for("usuarios"))
+
+@app.route("/migrar_base_datos_secret_2025", methods=["GET"])
+@rol_requerido("administrador")
+def migrar_base_datos():
+    """Migración segura: agrega columnas sin perder datos"""
+    try:
+        from sqlalchemy import text
+        
+        # Verificar si la columna 'email' ya existe en usuarios
+        with db.engine.connect() as conn:
+            # Intentar agregar columna email si no existe
+            try:
+                conn.execute(text("ALTER TABLE usuarios ADD COLUMN email VARCHAR(120)"))
+                conn.commit()
+                flash("Columna 'email' agregada a la tabla usuarios", "success")
+            except Exception as e:
+                if "duplicate column" in str(e).lower() or "already exists" in str(e).lower():
+                    flash(" La columna 'email' ya existe", "info")
+                else:
+                    raise e
+        
+        # Crear tabla de tokens si no existe
+        db.create_all()
+        
+        flash(" Migración completada exitosamente. Base de datos actualizada sin pérdida de datos.", "success")
+        return redirect(url_for("dashboard"))
+        
+    except Exception as e:
+        flash(f"Error en la migración: {str(e)}", "error")
+        return redirect(url_for("dashboard"))
+
 
 #ejecucion de la app
 if __name__ == '__main__':

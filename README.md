@@ -189,5 +189,3 @@ El archivo database_schema.sql contiene el esquema completo de la base de datos 
 ## Autor
 
 Proyecto desarrollado como sistema de gestión de inventario para Papelería EDUVAL.
-
-Año 2025
